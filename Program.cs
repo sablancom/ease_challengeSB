@@ -3,17 +3,20 @@ using System.Collections.Generic;
 
 namespace ease_challenge_repo
 {
-    class Program
+    class Skiresort
     {
-        private int x;
-        private int y;
-        private int n;
         private int[] row;
         private int[] col;
         private List<int> longestRoute;
         private int maxRouteScore;
-        bool isAllowed(int io, int jo, int im, int jm, bool[,] visited, int[,] graph){
-            if((0 <= im && im < this.n) && (0 <= jm && jm < this.n) && !visited[im,jm]){
+        Skiresort(){
+            row = new int[4] {0, 1, 0, -1};
+            col = new int[4] {-1, 0, 1, 0};
+            longestRoute = new List<int>();
+            maxRouteScore = 0;
+        }
+        bool isAllowed(int io, int jo, int im, int jm, bool[,] visited, int[,] graph, int iT, int jT){
+            if((0 <= im && im < iT) && (0 <= jm && jm < jT) && !visited[im,jm]){
                 if(graph[im,jm]<graph[io,jo]){
                     return true;
                 }else{
@@ -23,95 +26,59 @@ namespace ease_challenge_repo
                 return false;
             }
         }
-        void DFS_Visit(int[,] graph, List <List<int>> paths, bool[,] visited, int i, int j, int io, int jo,ref List<int> path){
+        void dfsVisit(int[,] graph, List <List<int>> paths, bool[,] visited, int i, int j, List<int> path, int iT, int jT){
             visited[i,j] = true;
             path.Add(graph[i,j]);
-
             List<int> pathN = new List<int>(path);
             paths.Add(pathN);
-            if(pathN.Count>=15){
-                pathN.ForEach(i => Console.Write("{0} ", i));
-                Console.WriteLine(" ");
-            }
-            if(pathN.Count>this.longestRoute.Count){
+            if((pathN.Count>longestRoute.Count) || (pathN.Count == longestRoute.Count && pathN[0]-pathN[pathN.Count-1] > this.maxRouteScore)){
                 this.longestRoute = pathN;
                 this.maxRouteScore = pathN[0]-pathN[pathN.Count-1];
-            }else{
-                if(pathN.Count == this.longestRoute.Count && pathN[0]-pathN[pathN.Count-1] > this.maxRouteScore){
-                    this.longestRoute = pathN;
-                    this.maxRouteScore = pathN[0]-pathN[pathN.Count-1];
-                }
             }
             for(int k=0;k<4;k++)
             {
-                if(isAllowed(i, j, i+ this.row[k],j+ this.col[k], visited, graph)){
-                    DFS_Visit(graph, paths, visited, i+ this.row[k], j+ this.col[k], io, jo,ref path );
+                if(isAllowed(i, j, i+ this.row[k],j+ this.col[k], visited, graph, iT, jT)){
+                    dfsVisit(graph, paths, visited, i+ this.row[k], j+ this.col[k], path, iT, jT);
                     path.RemoveAt(path.Count - 1);
                 }
             }
             visited[i,j] = false;
-            
-
         }
 
-        void DFS(int n, int[,] graph){
-            bool[,] visited = new bool[n, n];
-
+        void dfs(int iT, int jT, int[,] graph){
+            bool[,] visited = new bool[iT, jT];
             List <List<int>> paths = new List <List<int>>();
-            for(int i=0;i<n;i++){
-                for(int j=0;j<n;j++){
-                   List <int> nodeArray = new List<int>();
-                    DFS_Visit(graph, paths, visited, i, j, i, j,ref nodeArray);
+            for(int i=0;i<iT;i++){
+                for(int j=0;j<jT;j++){
+                   List <int> path = new List<int>();
+                    dfsVisit(graph, paths, visited, i, j, path, iT, jT);
                 }
             }
-            //Console.WriteLine("paths: ");
-            /*foreach (List<int> path in paths)
-            {
-                path.ForEach(Console.Write);
-                Console.WriteLine("");
-            }*/
-            Console.WriteLine("La ruta mas larga fue: ");
-            this.longestRoute.ForEach(Console.Write);
-            Console.WriteLine("Con un puntaje de: ");
+            Console.WriteLine("The longest and steepest calculated path is: ");
+            this.longestRoute.ForEach(i => Console.Write("{0} -> ", i));
+            Console.WriteLine("");
+            Console.WriteLine("The length of the calculated path is: ");
+            Console.WriteLine(this.longestRoute.Count);
+            Console.WriteLine("The drop of the calculated path is: ");
             Console.WriteLine(this.maxRouteScore);
         }
 
         static void Main(string[] args)
         {
-            DateTime start = DateTime.Now;
-            Program challenge =  new Program();
-            string[] lines = System.IO.File.ReadAllLines(@"C:\ease_challenge_repo\map.txt");
-            System.Console.WriteLine("Contents of 4x4 = ");
-            string[] inputLayer = lines[0].Split(" ");
-            challenge.x = Int32.Parse(inputLayer[0]);
-            challenge.y = Int32.Parse(inputLayer[1]);
-            System.Console.WriteLine(challenge.x + " "+ challenge.y);
-            int[,] graph = new int[challenge.x, challenge.y];
-            for(int i=0;i<challenge.x;i++){
-                inputLayer = lines[i+1].Split(" ");
-                for(int j=0;j<challenge.y;j++){
-                    graph[i,j] = Int32.Parse(inputLayer[j]);
+           DateTime start = DateTime.Now;
+            string[] lines = System.IO.File.ReadAllLines("map.txt");
+            string[] line = lines[0].Split(" ");
+            Skiresort challenge =  new Skiresort();
+            int iT = Int32.Parse(line[0]);
+            int jT = Int32.Parse(line[1]);
+            int[,] graph = new int[iT, jT];
+            for(int i=0;i<iT;i++){
+                line = lines[i+1].Split(" ");
+                for(int j=0;j<jT;j++){
+                    graph[i,j] = Int32.Parse(line[j]);
                 }
             }
-            
-            challenge.row = new int[4];
-            challenge.col = new int[4];
-            challenge.row[0] = 0;
-            challenge.col[0] = -1;
-
-            challenge.row[1] = 1;
-            challenge.col[1] = 0;
-
-            challenge.row[2] = 0;
-            challenge.col[2] = 1;
-
-            challenge.row[3] = -1;
-            challenge.col[3] = 0;
-
-            challenge.n = challenge.x;
-            challenge.longestRoute = new List<int>();
-            challenge.maxRouteScore = 0;
-            challenge.DFS(challenge.x, graph);
+            challenge.dfs(iT, jT, graph);
             DateTime end = DateTime.Now;
             TimeSpan ts = (end - start);
             Console.WriteLine("Elapsed Time is {0} ms", ts.TotalMilliseconds);
