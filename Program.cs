@@ -5,6 +5,8 @@ namespace ease_challenge_repo
 {
     class Program
     {
+        private int x;
+        private int y;
         private int n;
         private int[] row;
         private int[] col;
@@ -23,11 +25,14 @@ namespace ease_challenge_repo
         }
         void DFS_Visit(int[,] graph, List <List<int>> paths, bool[,] visited, int i, int j, int io, int jo,ref List<int> path){
             visited[i,j] = true;
-            Console.Write(visited[i,j]+" ");
             path.Add(graph[i,j]);
 
             List<int> pathN = new List<int>(path);
             paths.Add(pathN);
+            if(pathN.Count>=15){
+                pathN.ForEach(i => Console.Write("{0} ", i));
+                Console.WriteLine(" ");
+            }
             if(pathN.Count>this.longestRoute.Count){
                 this.longestRoute = pathN;
                 this.maxRouteScore = pathN[0]-pathN[pathN.Count-1];
@@ -51,12 +56,7 @@ namespace ease_challenge_repo
 
         void DFS(int n, int[,] graph){
             bool[,] visited = new bool[n, n];
-            for(int i=0;i<n;i++){
-                for(int j=0;j<n;j++){
-                    Console.Write(visited[i,j]+" ");
-                }
-                Console.WriteLine("");
-            }
+
             List <List<int>> paths = new List <List<int>>();
             for(int i=0;i<n;i++){
                 for(int j=0;j<n;j++){
@@ -64,12 +64,12 @@ namespace ease_challenge_repo
                     DFS_Visit(graph, paths, visited, i, j, i, j,ref nodeArray);
                 }
             }
-            Console.WriteLine("paths: ");
-            foreach (List<int> path in paths)
+            //Console.WriteLine("paths: ");
+            /*foreach (List<int> path in paths)
             {
                 path.ForEach(Console.Write);
                 Console.WriteLine("");
-            }
+            }*/
             Console.WriteLine("La ruta mas larga fue: ");
             this.longestRoute.ForEach(Console.Write);
             Console.WriteLine("Con un puntaje de: ");
@@ -78,27 +78,22 @@ namespace ease_challenge_repo
 
         static void Main(string[] args)
         {
-            int nx;//number of vertices
-            Console.WriteLine("Hello World!");
-            Console.WriteLine("Number of elements in x");
-            nx = Int32.Parse(Console.ReadLine());
-            int ny;//number of vertices
-            Console.WriteLine("Number of elements in y");
-            ny = Int32.Parse(Console.ReadLine());
-            int[,] graph = new int[nx, ny];
-            for(int i=0;i<nx;i++){
-                for(int j=0;j<ny;j++){
-                    Console.WriteLine("Ingrese elemento "+i+" "+j);
-                    graph[i,j]=Int32.Parse(Console.ReadLine());
-                }
-            }
-            for(int i=0;i<nx;i++){
-                for(int j=0;j<ny;j++){
-                    Console.Write(graph[i,j]+" ");
-                }
-                Console.WriteLine("");
-            }
+            DateTime start = DateTime.Now;
             Program challenge =  new Program();
+            string[] lines = System.IO.File.ReadAllLines(@"C:\ease_challenge_repo\map.txt");
+            System.Console.WriteLine("Contents of 4x4 = ");
+            string[] inputLayer = lines[0].Split(" ");
+            challenge.x = Int32.Parse(inputLayer[0]);
+            challenge.y = Int32.Parse(inputLayer[1]);
+            System.Console.WriteLine(challenge.x + " "+ challenge.y);
+            int[,] graph = new int[challenge.x, challenge.y];
+            for(int i=0;i<challenge.x;i++){
+                inputLayer = lines[i+1].Split(" ");
+                for(int j=0;j<challenge.y;j++){
+                    graph[i,j] = Int32.Parse(inputLayer[j]);
+                }
+            }
+            
             challenge.row = new int[4];
             challenge.col = new int[4];
             challenge.row[0] = 0;
@@ -113,10 +108,13 @@ namespace ease_challenge_repo
             challenge.row[3] = -1;
             challenge.col[3] = 0;
 
-            challenge.n = nx;
+            challenge.n = challenge.x;
             challenge.longestRoute = new List<int>();
             challenge.maxRouteScore = 0;
-            challenge.DFS(nx, graph);
+            challenge.DFS(challenge.x, graph);
+            DateTime end = DateTime.Now;
+            TimeSpan ts = (end - start);
+            Console.WriteLine("Elapsed Time is {0} ms", ts.TotalMilliseconds);
         }
     }
 }
